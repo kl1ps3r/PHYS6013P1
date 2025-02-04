@@ -27,7 +27,7 @@ def q(x, y):
     return np.array([dtheta_dx(x, y[0], y[1]), dmu_dx(x, y[0])])
 
 def event(t, y):
-    return y[0] - 1e-5
+    return y[0]
 event.terminal = True
 
 t_min = 0
@@ -61,7 +61,7 @@ def get_mass_radius(theta_0):
     radius = calc_radius(sol.t_events[0])
     return np.array([radius, mass])
 
-initial_densities = np.logspace(0, 4, 30)
+initial_densities = np.logspace(-2, 4, 50)
 data = []
 
 for theta_0 in initial_densities:
