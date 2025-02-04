@@ -61,7 +61,7 @@ def get_mass_radius(theta_0):
     radius = calc_radius(sol.t_events[0])
     return np.array([radius, mass])
 
-initial_densities = np.logspace(-2, 4, 50)
+initial_densities = np.logspace(-1, 4, 30)
 data = []
 
 for theta_0 in initial_densities:
@@ -69,11 +69,11 @@ for theta_0 in initial_densities:
 
 data = np.array(data)
 
-wds = np.loadtxt("white_dwarfs.csv", unpack=True, delimiter=",")
+wds = np.loadtxt("add_wd_corr.csv", unpack=True, delimiter=",")
 
 #plt.plot(data[:, 1], data[:, 0])
 #plt.show()
-plt.plot(data[:, 1], data[:, 0])
+plt.plot(data[:, 1], data[:, 0], ".")
 plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".") 
 plt.xlabel("Mass")
 plt.ylabel("Radius")
