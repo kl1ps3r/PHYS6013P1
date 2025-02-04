@@ -18,8 +18,8 @@ SOLAR_RADIUS = 6.95e8
 
 RHO_0 = PROTON_MASS * ELECTRON_MASS**3 * SPEED_OF_LIGHT**3 / (3 * np.pi**2 * H_BAR**3 * ELECTRON_FRACTION)
 
-R_0 = (ELECTRON_MASS * SPEED_OF_LIGHT**2 * ELECTRON_FRACTION / (4 * np.pi * GRAVITATION * RHO_0 * PROTON_MASS))**0.5
+R_0 = (3*ELECTRON_MASS * SPEED_OF_LIGHT**2 * ELECTRON_FRACTION / (4 * np.pi * GRAVITATION * RHO_0 * PROTON_MASS))**0.5
 
-M_0 = 4 * np.pi * R_0**3 * RHO_0
+M_0 = 4 * np.pi * R_0**3 * RHO_0 / 3
 if __name__ == "__main__":
     print(R_0, RHO_0, M_0)

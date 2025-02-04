@@ -16,12 +16,12 @@ def gamma(rho):
 
 def dtheta_dx(x, theta, mu):
     if x < 1e-4:
-        return - x * theta / (3 * gamma(theta)) 
+        return - x * theta / (gamma(theta)) 
     else:
         return - mu * theta / (gamma(theta) * x**2)
 
 def dmu_dx(x, theta):
-    return x**2 * theta
+    return 3 * x**2 * theta
 
 def q(x, y):
     return np.array([dtheta_dx(x, y[0], y[1]), dmu_dx(x, y[0])])
