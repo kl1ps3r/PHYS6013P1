@@ -73,7 +73,7 @@ wds = np.loadtxt("add_wd_corr.csv", unpack=True, delimiter=",")
 
 #plt.plot(data[:, 1], data[:, 0])
 #plt.show()
-plt.plot(data[:, 1], data[:, 0], ".")
+plt.plot(data[:, 1], data[:, 0])
 plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".") 
 plt.xlabel("Mass")
 plt.ylabel("Radius")
