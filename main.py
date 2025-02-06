@@ -24,6 +24,10 @@ def gamma(theta):
     ----------
     theta : float
         The dimensionless density
+
+    Returns
+    -------
+    float
     """
     return np.sign(theta) * np.abs(theta)**(2/3) / (3 * (1 + np.sign(theta) * np.abs(theta)**(2/3))**0.5)
 
