@@ -193,19 +193,19 @@ def calc_mass(mu):
 
 def apply_Ye_scale(data, Ye=0.5):
     """
-    Scale Masses and Radii by Ye (the electron fraction). 
+    Scale masses and radii by Ye (the electron fraction). 
     Mass proportional to R^3 * rho => Ye^2.
 
     Parameters
     ----------
     data : (N, 2,) ndarray
-        Input data of Mass and Radii. Expected format: [[Mass, Radius],...]
+        Input data of mass and radii.
     Ye : float {default: 0.5}
         The value of the electron faction to scale with.
     Returns
     -------
     (N, 2,) np.ndarray
-        The scaled Masses and Radii
+        The scaled masses and radii
     """ 
 
     data[:, 0] = data[:, 0] * Ye**2
