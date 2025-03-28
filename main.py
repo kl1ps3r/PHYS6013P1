@@ -256,7 +256,8 @@ if __name__=="__main__":
     plt.plot(data_5[:, 0], data_5[:, 1])
     plt.plot(data_46[:, 0], data_46[:, 1])
 
-    # plotting observed white dwarf measurements with their uncertainties
+    # plotting observed white dwarf measurements with their uncertainties, 
+    # currently raddi only has mass errors and they might be correlated?? idk.
     plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".", label="Included WDs")
     plt.errorbar(parsons_wds[0], parsons_wds[2], xerr=parsons_wds[1], yerr=parsons_wds[3], fmt=".", label="Parsons White dwarfs") 
     plt.errorbar(raddi_wds[0], raddi_wds[2], xerr=raddi_wds[1], fmt=".", label="Raddi White dwarfs")
