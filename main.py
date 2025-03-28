@@ -13,6 +13,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import integrate
 import consts
+import pandas as pd
 
 
 def gamma(theta):
@@ -34,7 +35,8 @@ def gamma(theta):
     Due to numpy not liking computing negative numbers to any scalar power, 
     np.sign and np.abs is used to circumvent this.
     """
-    return np.sign(theta) * np.abs(theta)**(2/3) / (3 * (1 + np.sign(theta) * np.abs(theta)**(2/3))**0.5)
+
+    return np.abs(theta)**(2/3) / (3 * (1 + np.abs(theta)**(2/3))**0.5)
 
 
 def dtheta_dx(x, theta, mu):
@@ -57,9 +59,9 @@ def dtheta_dx(x, theta, mu):
     """
  
     if x < 1e-4:
-        return - x * theta / (gamma(theta)) 
+        return -1 * x * theta**2 / (gamma(theta)) 
     else:
-        return - mu * theta / (gamma(theta) * x**2)
+        return -1 * mu * theta / (gamma(theta) * x**2)
 
 
 def dmu_dx(x, theta):
@@ -116,12 +118,12 @@ def event(x, y):
     float
         The value of theta.
     """
-    return y[0]
+    return y[0] - 1e-5
 # set the terminal flag, makes solve_ivp terminate on finding a root
 event.terminal = True
 
       
-def get_mass_radius(theta_0, x_min=0.0, x_max=10.0, terminator=event):
+def get_mass_radius(theta_0, x_min=0.0, x_max=40.0, terminator=event):
     """
     Estimates white dwarf mass and radius for given initial core density.
 
@@ -151,7 +153,7 @@ def get_mass_radius(theta_0, x_min=0.0, x_max=10.0, terminator=event):
     q_0 = np.array([theta_0, 0])
     
     # obtaining the solution to the ODE
-    sol = integrate.solve_ivp(q, [x_min, x_max], q_0, max_step=0.001, 
+    sol = integrate.solve_ivp(q, [x_min, x_max], q_0, atol= 1e-6, rtol=1e-5,
                               events=terminator)
     
     # Calculating the mass and radius of the white dwarf
@@ -225,19 +227,26 @@ if __name__=="__main__":
     # ~~~~~~~~~~~ Solving ~~~~~~~~~~~ 
 
     # create the initial core densities
-    initial_densities = np.logspace(-1, 4, 30)
+    initial_densities = np.logspace(-2, 10, 100)
+    
     data = []
 
     # estimate the mass and readius of the white dwarf for each radius
     for theta_0 in initial_densities:
         data.append(get_mass_radius(theta_0))
-
     data = np.array(data)
 
     # load in measurements of actual white dwarfs
-    wds = np.loadtxt("add_wd_corr.csv", unpack=True, delimiter=",")
+    wds = np.loadtxt("white_dwarfs.csv", unpack=True, delimiter=",")
 
-    # scaling model data to have Ye = 0.5, 0.46 respectively
+    parsons_wds_pd = pd.read_csv("parsons_whites.csv")
+    parsons_wds = parsons_wds_pd[["Mass_Msun", "Mass_err", "Radius_Rsun", "Radius_err"]].to_numpy().T
+
+    raddi_wds_pd = pd.read_csv("raddi_whites.csv", comment="#")
+    raddi_wds_pd.columns = raddi_wds_pd.columns.str.strip()
+    raddi_wds = raddi_wds_pd[["M2", "M2_err", "R", "dR2"]].to_numpy(dtype=np.float64).T
+
+    # scaling model data to have  Ye = 0.5, 0.46 corresponding to C/O core and Fe core white dwarfs respectively
     data_5 = apply_Ye_scale(data.copy())
     data_46 = apply_Ye_scale(data.copy(), 0.46)
 
@@ -248,11 +257,14 @@ if __name__=="__main__":
     plt.plot(data_46[:, 0], data_46[:, 1])
 
     # plotting observed white dwarf measurements with their uncertainties
-    plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".") 
-
+    plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".", label="Included WDs")
+    plt.errorbar(parsons_wds[0], parsons_wds[2], xerr=parsons_wds[1], yerr=parsons_wds[3], fmt=".", label="Parsons White dwarfs") 
+    plt.errorbar(raddi_wds[0], raddi_wds[2], xerr=raddi_wds[1], fmt=".", label="Raddi White dwarfs")
+    
     # make graph pretty stuff
     plt.xlabel(r"Mass $\frac{M}{M_\odot}$")
-    plt.ylabel("Radius")
+    plt.ylabel(r"Radius $\frac{R}{R_\odot}$")
 
+    plt.legend()
     plt.show()
     #plt.savefig("YES.png")
