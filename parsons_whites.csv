@@ -1,3 +1,4 @@
+#Parsons, S. G., Gänsicke, B. T., Marsh, T. R., et al. 2017, MNRAS, 470, 4473
 Object,g_mag,Porb_h,Teff_K,Teff_err,Mass_Msun,Mass_err,Radius_Rsun,Radius_err,R_RCO,R_RCO_err,R_RHe,R_RHe_err,Ref
 CSS 080502,17.08,3.587,17838,482,0.4756,0.0036,0.01749,0.00028,1.06,0.01,0.98,0.01,1
 CSS 09704,18.41,3.756,29969,679,0.4164,0.0356,0.02521,0.00170,1.25,0.08,1.05,0.08,1
