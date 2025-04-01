@@ -9,7 +9,7 @@ sols = []
 event_densities, event_masses, masses, radii = [], [], [], []
 for i in range(2, 10):
     sols.append(solve_ivp(main.q, [0,10], [initial_density, 0], dense_output=True, 
-                          events=main.event, rtol=10**(-i), atol=1e-6, max_step=1))
+                          events=main.event, rtol=10**(-i), atol=1e-6, max_step=1, args=(initial_density,)))
 
     #print(sols[-1].t_events, sols[-1].y_events)
 
@@ -21,13 +21,15 @@ for i in range(2, 10):
     masses.append(sols[-1].y[1])
     radii.append(sols[-1].t)
 
-
+fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
 #print(radii, masses)
 #plt.plot(event_masses)
 for i, (mass, radius) in enumerate(zip(masses, radii)):
-    plt.plot(radius, mass, label=f"1e-{i+2}")
-plt.legend()
-plt.show()
+    ax.plot(radius, mass, label=f"1e-{i+2}")
+ax.legend()
+ax.set_xlabel("Dimensionless radius")
+ax.set_ylabel("Dimensionless mass")
+plt.savefig("errors.png")
 
 """
 sol = solve_ivp(main.q, [0,10], [initial_density, 0], dense_output=True, 

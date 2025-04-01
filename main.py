@@ -83,7 +83,7 @@ def dmu_dx(x, theta):
     return 3 * x**2 * theta
 
 
-def q(x, y):
+def q(x, y, theta_0):
     """
     Paramaterises the system of ODEs.
 
@@ -102,7 +102,7 @@ def q(x, y):
     return np.array([dtheta_dx(x, y[0], y[1]), dmu_dx(x, y[0])])
 
 
-def event(x, y):
+def event(x, y, theta_0):
     """
     Event function for ODE solver to find when theta = 0.
 
@@ -118,7 +118,7 @@ def event(x, y):
     float
         The value of theta.
     """
-    return y[0] - 1e-5
+    return y[0] - 1e-3 * theta_0
 # set the terminal flag, makes solve_ivp terminate on finding a root
 event.terminal = True
 
@@ -153,8 +153,8 @@ def get_mass_radius(theta_0, x_min=0.0, x_max=40.0, terminator=event):
     q_0 = np.array([theta_0, 0])
     
     # obtaining the solution to the ODE
-    sol = integrate.solve_ivp(q, [x_min, x_max], q_0, atol= 1e-6, rtol=1e-5,
-                              events=terminator)
+    sol = integrate.solve_ivp(q, [x_min, x_max], q_0, atol= 1e-8, rtol=1e-6,
+                              events=terminator, args=(theta_0,))
     
     # Calculating the mass and radius of the white dwarf
     mass = calc_mass(sol.y_events[0].T[1])
@@ -224,10 +224,33 @@ def apply_Ye_scale(data, Ye=0.5):
 
 if __name__=="__main__":
 
+    # ~~~~~ Make initial graphs ~~~~~
+
+    q_0 = np.array([15, 0])
+    sol = integrate.solve_ivp(q, [0, 10], q_0, atol=1e-10, rtol=1e-8, 
+                              dense_output=True, events=event, args=(q_0[0],),
+                              method="RK45")
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+    ax.plot(sol.t, sol.y[0], label="Density")
+    ax.set_xlabel("Dimensionless radius")
+    ax.set_ylabel("Dimensionless density")
+    #plt.show()
+    plt.savefig("densityonestar.png")
+
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+
+    ax.plot(sol.t, sol.y[1], label="Mass")
+    ax.set_xlabel("Dimensionless radius")
+    ax.set_ylabel("Dimensionless mass")
+    #plt.show()
+    plt.savefig("massonestar.png")
+    
+    #plt.savefig("OneStar.png")
+
     # ~~~~~~~~~~~ Solving ~~~~~~~~~~~ 
 
     # create the initial core densities
-    initial_densities = np.logspace(-2, 10, 100)
+    initial_densities = np.logspace(-2, 9.5, 150)
     
     data = []
 
@@ -239,7 +262,7 @@ if __name__=="__main__":
     # load in measurements of actual white dwarfs
     wds = np.loadtxt("white_dwarfs.csv", unpack=True, delimiter=",")
 
-    parsons_wds_pd = pd.read_csv("parsons_whites.csv")
+    parsons_wds_pd = pd.read_csv("parsons_whites.csv", comment="#")
     parsons_wds = parsons_wds_pd[["Mass_Msun", "Mass_err", "Radius_Rsun", "Radius_err"]].to_numpy().T
 
     raddi_wds_pd = pd.read_csv("raddi_whites.csv", comment="#")
@@ -252,20 +275,36 @@ if __name__=="__main__":
 
     # ~~~~~~~~~~~ Plotting ~~~~~~~~~~~
 
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+    ax.plot(data_5[-30:, 0], data_5[-30:, 1], ".", label="Ye = 0.5")
+    ax.set_xlabel(r"Mass $\frac{M}{M_\odot}$")
+    ax.set_ylabel(r"Radius $\frac{R}{R_\odot}$")
+    plt.savefig("final30.png")
+
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=200)
+
     # plotting Mass vs Radius models for Ye = 0.5, 0.46 respectively
-    plt.plot(data_5[:, 0], data_5[:, 1])
-    plt.plot(data_46[:, 0], data_46[:, 1])
+    ax.plot(data_5[:, 0], data_5[:, 1], label="Ye = 0.5")
+    ax.plot(data_46[:, 0], data_46[:, 1], label="Ye = 0.46")
+
+    # Printing the average and standard deviation of the last 10 points of the models
+    print(np.average(data_5[-20:, 0]), np.std(data_5[-20:, 0]))
+    print(np.average(data_46[-20:, 0]), np.std(data_46[-20:, 0]))
 
     # plotting observed white dwarf measurements with their uncertainties, 
     # currently raddi only has mass errors and they might be correlated?? idk.
-    plt.errorbar(wds[0], wds[2], xerr=wds[1], yerr=wds[3], fmt=".", label="Included WDs")
-    plt.errorbar(parsons_wds[0], parsons_wds[2], xerr=parsons_wds[1], yerr=parsons_wds[3], fmt=".", label="Parsons White dwarfs") 
-    plt.errorbar(raddi_wds[0], raddi_wds[2], xerr=raddi_wds[1], fmt=".", label="Raddi White dwarfs")
+    wds = wds.T
+    ax.errorbar(wds[0, 0], wds[0, 2], xerr=wds[0, 1], yerr=wds[0, 3], fmt="x", label="Sirius B", markersize=10)
+    ax.errorbar(wds[1, 0], wds[1, 2], xerr=wds[1, 1], yerr=wds[1, 3], fmt=".", label="40 Eri B")
+    ax.errorbar(wds[2, 0], wds[2, 2], xerr=wds[2, 1], yerr=wds[2, 3], fmt=".", label="Stein 2051 B", color="black")
+    ax.errorbar(parsons_wds[0], parsons_wds[2], xerr=parsons_wds[1], yerr=parsons_wds[3], fmt="D", 
+                 label="Parsons, S. G. et al.", markersize = 3) 
+    ax.errorbar(raddi_wds[0], raddi_wds[2], xerr=raddi_wds[1], fmt="v", 
+                 label="Raddi, R. et al.", markersize = 3)
     
     # make graph pretty stuff
-    plt.xlabel(r"Mass $\frac{M}{M_\odot}$")
-    plt.ylabel(r"Radius $\frac{R}{R_\odot}$")
+    ax.set_xlabel(r"Mass $\frac{M}{M_\odot}$")
+    ax.set_ylabel(r"Radius $\frac{R}{R_\odot}$")
 
-    plt.legend()
-    plt.show()
-    #plt.savefig("YES.png")
+    ax.legend()
+    plt.savefig("mass_radius.png")
